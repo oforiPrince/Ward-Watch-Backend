@@ -38,8 +38,8 @@ class ChildSerializer(serializers.ModelSerializer):
 #         model = ParentChild
 #         fields = '__all__'
 
-# class LoginSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Profile
-#         fields = ['username', 'password']
-#         extra_kwargs = {'password': {'write_only': True}}
+class LoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['username', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
