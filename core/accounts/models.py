@@ -7,14 +7,7 @@ from core.utils.enums import Gender
 class Profile(AbstractBaseUser):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, blank=True, null=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    other_name = models.CharField(max_length=100, blank=True, null=True)
-    full_name = models.CharField(max_length=100, blank=True, null=True)
-    gender = models.CharField(max_length=10, choices=[(gender.value, gender.name) for gender in Gender], null=True, blank=True)
-    profile_picture = models.ImageField(upload_to='teachers/', blank=True, null=True)
-    is_child = models.BooleanField(default=False)
-    is_parent = models.BooleanField(default=False)
+    role = models.CharField(max_length=10, choices=[('parent', 'Parent'), ('child', 'Child')], default='child')
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -22,7 +15,7 @@ class Profile(AbstractBaseUser):
     # Configure the custom user manager
     objects = UserManager()
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['first_name', 'last_name',]
+    REQUIRED_FIELDS = []
     
     def __str__(self):
         return self.username
@@ -36,19 +29,6 @@ class Profile(AbstractBaseUser):
     def get_short_name(self):
         return self.first_name
     
-    
-    def save(self, *args, **kwargs):
-        
-        # Combine the first_name, last_name, and other_names to create full_name
-        if self.first_name and self.last_name:
-            if self.other_name:
-                self.full_name = f"{self.first_name} {self.other_name} {self.last_name}"
-            else:
-                self.full_name = f"{self.first_name} {self.last_name}"
-        else:
-            self.full_name = None
-
-        super().save(*args, **kwargs)
 
 class Parent(models.Model):
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
@@ -58,7 +38,7 @@ class Parent(models.Model):
 
 class Child(models.Model):
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
-    location = models.OneToOneField('ChildLocation', on_delete=models.CASCADE)
+    location = models.OneToOneField('ChildLocation', on_delete=models.CASCADE, blank=True, null=True)
     
     def __str__(self):
         return self.profile.full_name
