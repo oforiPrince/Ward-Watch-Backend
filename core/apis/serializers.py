@@ -31,12 +31,11 @@ class ChildSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
         
-# class ParentChildSerializer(serializers.ModelSerializer):
-#     parent = ParentRegisterSerializer()
-#     child = ChildSerializer()
-#     class Meta:
-#         model = ParentChild
-#         fields = '__all__'
+class ParentChildSerializer(serializers.ModelSerializer):
+    unique_id = serializers.CharField(source='child.unique_id')
+    class Meta:
+        model = ParentChild
+        fields = ['unique_id']  
 
 class LoginSerializer(serializers.ModelSerializer):
     class Meta:

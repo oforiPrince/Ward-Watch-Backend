@@ -2,8 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser 
 from accounts.managers import UserManager
 
-from core.utils.enums import Gender  
-
+import uuid
 class Profile(AbstractBaseUser):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, blank=True, null=True)
@@ -27,7 +26,7 @@ class Profile(AbstractBaseUser):
         return True
     
     def get_short_name(self):
-        return self.first_name
+        return self.username
     
 
 class Parent(models.Model):
@@ -37,17 +36,26 @@ class Parent(models.Model):
 
 
 class Child(models.Model):
+    def unique_id_generator(self):
+        return uuid.uuid4().hex[:6].upper()
+    
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+    unique_id = models.CharField(max_length=6, unique=True, blank=True, null=True)
     location = models.OneToOneField('ChildLocation', on_delete=models.CASCADE, blank=True, null=True)
     
     def __str__(self):
-        return self.profile.full_name
+        return str(self.profile)
     
+    def save(self, *args, **kwargs):
+        if self.location and not self.unique_id:
+            self.unique_id = self.unique_id_generator()
+        super().save(*args, **kwargs)
+        
 class ChildLocation(models.Model):
-    longitude = models.CharField(max_length=50)
-    latitude = models.CharField(max_length=50)
-    longitudeDelta = models.CharField(max_length=100)
-    latitudeDelta = models.CharField(max_length=100)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitudeDelta = models.DecimalField(max_digits=9, decimal_places=6)
+    latitudeDelta = models.DecimalField(max_digits=9, decimal_places=6)
     
     def __str__(self):
         return f"{self.longitude} - {self.latitude}"
